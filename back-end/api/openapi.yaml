@@ -1,0 +1,602 @@
+openapi: 3.0.0
+info:
+  title: distributed facebook
+  description: "documentation of api"
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: https://virtserver.swaggerhub.com/Sr05-Project/Distributed_Facebook_API/1.0.0
+    description: SwaggerHub API Auto Mocking
+  - url: https://virtserver.swaggerhub.com/Sr05-Project/Receive/1.0.0
+  - url: http://virtserver.swaggerhub.com/Sr05-Project/Receive/1.0.0
+tags:
+  - name: communication
+    description: communication request
+    externalDocs:
+      description: Find out more
+      url: http://swagger.io
+  - name: friends
+    description: Access to friend's friends
+  - name: posts
+    description: Operations about posts
+    externalDocs:
+      description: Find out more about our posts lul
+      url: http://swagger.io
+  - name: snapshot
+    description: Related to snapshot updates
+paths:
+  /checkMsg:
+    get:
+      tags:
+        - snapshot
+      summary: used to ask data to others
+      description: used to check if someone sent a message to us
+      operationId: getMsgHistory
+      responses:
+        "200":
+          description: returned you got the history of messages
+      x-swagger-router-controller: Snapshot
+  /checkFriend:
+    get:
+      tags:
+        - snapshot
+      summary: used to check if someone tried to befriend us
+      description: Ask a certain snapshot
+      operationId: getFriendStatus
+      responses:
+        "200":
+          description:  returned you got befriended status
+      x-swagger-router-controller: Snapshot
+  /snapshot:
+    get:
+      tags:
+        - snapshot
+      summary: GetSnapshotfrom user
+      description: Get Snapshot from receiving user
+      operationId: getSnapshot
+      parameters:
+        - name: url
+          in: query
+          description: url of user
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+      x-swagger-router-controller: Snapshot
+    post:
+      tags:
+        - snapshot
+      summary: UpdateSnapshot
+      operationId: updateSnapshot
+      parameters:
+        - name: url
+          in: query
+          description: url of user
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: request has been made
+          content:
+            application/json:
+              schema:
+                type: string
+                x-content-type: application/json
+        "405":
+          description: Invalid input
+      x-swagger-router-controller: Friends
+  /init:
+    get:
+      tags:
+        - Local
+      summary: Target by the local react on start
+      description: Ask if friends are available and ask for the snapshot
+      operationId: init
+      responses:
+        "200":
+          description: returned if you are connected
+      x-swagger-router-controller: Local
+  /communicate:
+    post:
+      tags:
+        - communication
+      summary: Treat this message
+      operationId: receiveMessage
+      requestBody:
+        $ref: "#/components/requestBodies/Message"
+      responses:
+        "405":
+          description: Invalid
+      x-swagger-router-controller: Communication
+  /receiveMessage:
+    post:
+      tags:
+        - communication
+      summary: add a new message
+      operationId: receiveMessagePOST
+      responses:
+        "200":
+          description: OK
+        "405":
+          description: Invalid input
+      x-content-type: application/json
+      x-swagger-router-controller: Communication
+  /sendMessageFriend:
+    post:
+      tags:
+        - communication
+      summary: add a new message to your friend
+      operationId: sendMessagePOST
+      responses:
+        "200":
+          description: OK
+        "405":
+          description: Invalid input
+      x-content-type: application/json
+      x-swagger-router-controller: Communication
+  /getAllPublicMessages:
+    get:
+      tags:
+        - communication
+      summary: get all new message of everyone reachable
+      operationId: sendPublicMessagePOST
+      parameters:
+      - name: visited
+        in: query
+        description: Sites that have already been visited
+        required: true
+        allowEmptyValue: true
+        style: form
+        explode: true
+        schema:
+            type: array
+            items:
+              type: string
+      - name: origin
+        in: query
+        description: origin of the request
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: bouns
+        in : query
+        description: ttl of the request
+        style: form
+        required: true
+        explode: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: OK
+        "405":
+          description: Invalid input
+      x-content-type: application/json
+      x-swagger-router-controller: Communication
+  /privateMessages:
+    get:
+      tags:
+        - communication
+      summary: Getmessages from user
+      description: Get messages from receiving user
+      operationId: privateMessagesofUserGET
+      parameters:
+        - name: url
+          in: query
+          description: url of user
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+                x-content-type: application/json
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+      x-swagger-router-controller: Communication
+  /publicMessages:
+    get:
+      tags:
+        - communication
+      summary: Get public messages from user
+      description: Get  public messages from an user
+      operationId: publicMessagesofUserGET
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+                x-content-type: application/json
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+      x-swagger-router-controller: Communication
+  /friends:
+    get:
+      tags:
+        - friends
+      summary: Get friends from receiving user
+      description: Get friends from receiving user
+      operationId: getAllFriends
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Friends"
+                x-content-type: application/json
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Friends"
+      x-swagger-router-controller: Friends
+    post:
+      tags:
+        - friends
+      summary: Add me as friend
+      operationId: addMe
+      parameters:
+        - name: situation
+          in: query
+          description: inner request or out request
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - out
+              - in
+              - delete
+      responses:
+        "200":
+          description: request has been made
+          content:
+            application/json:
+              schema:
+                type: string
+                x-content-type: application/json
+        "405":
+          description: Invalid input
+      x-swagger-router-controller: Friends
+  /notify:
+    get:
+      tags:
+        - friends
+      summary: Notify the the targeted user than you are connected
+      description: Say that you are connected
+      operationId: notify
+      parameters:
+        - name: from
+          in: query
+          description: origin of the request
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: integer
+        - name: action
+          in: query
+          description: type of notification
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - login
+              - logout
+      responses:
+        "200":
+          description: returned if you are connected
+      x-swagger-router-controller: Friends
+
+  /me:
+    get:
+      tags:
+        - friends
+      summary: Get the friend that correspond to the current node user
+      description: Retrieve me.
+      operationId: me
+      responses:
+        "200":
+          description: returned if you are connected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              x-content-type: application/json
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Friends"
+      x-swagger-router-controller: Friends
+  /getFeed:
+    get:
+      tags:
+        - posts
+      summary: Get the feed of someone
+      description: Feed getter
+      operationId: getFeed
+      parameters:
+        - name: visited
+          in: query
+          description: Sites that have already been visited
+          required: true
+          allowEmptyValue: true
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+        - name: origin
+          in: query
+          description: origin of the request
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+                x-content-type: application/json
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+      x-swagger-router-controller: Posts
+  /getPostsPublic:
+    get:
+      tags:
+      - posts
+      summary: Get the public posts of someone
+      description: public posts getter
+      operationId: getPostsPublic
+      parameters:
+      - name: origin
+        in: query
+        description: origin of the request
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+                x-content-type: application/json
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+      x-swagger-router-controller: Posts
+  /posts:
+    get:
+      tags:
+        - posts
+      summary: Get posts from friend
+      description: Get posts from friend
+      operationId: getAllPosts
+      parameters:
+        - name: status
+          in: query
+          description: Status values that need to be considered for filter
+          required: false
+          style: form
+          explode: true
+          schema:
+            $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+                x-content-type: application/json
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+      x-swagger-router-controller: Posts
+    post:
+      tags:
+        - posts
+      summary: Create a new post
+      operationId: createNewPost
+      responses:
+        "200":
+          description: request has been made
+          content:
+            application/json:
+              schema:
+                type: string
+                x-content-type: application/json
+        "405":
+          description: Invalid input
+      x-swagger-router-controller: Posts
+components:
+  schemas:
+    Friends:
+      type: array
+      items:
+        $ref: "#/components/schemas/User"
+    Message:
+      required:
+        - content
+        - messageType
+        - sender
+        - target
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        messageType:
+          $ref: "#/components/schemas/MessageType"
+        content:
+          type: string
+          example: Salut
+        sender:
+          $ref: "#/components/schemas/User"
+        target:
+          $ref: "#/components/schemas/User"
+      example:
+        messageType: private
+        sender:
+          name: name
+          id: 0
+          url: url
+        id: 0
+        content: Salut morray
+      xml:
+        name: Pet
+    CreateNewPost:
+      required:
+        - content
+      type: object
+      properties:
+        content:
+          type: string
+          example: Salut
+        visibility:
+          type: string
+          example: private
+        authorUrl:
+          type: string
+          example: localhost:8001/api/.....
+        date:
+          type: string
+    MessageType:
+      type: string
+      enum:
+        - private
+        - broadcast
+    User:
+      required:
+        - name
+        - url
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        url:
+          type: string
+      example:
+        name: name
+        id: 0
+        url: url
+    Post:
+      required:
+        - author
+        - content
+        - date
+        - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        date:
+          type: string
+        content:
+          type: string
+        author:
+          $ref: "#/components/schemas/User"
+      example:
+        date: date
+        author:
+          name: name
+          id: 0
+          url: url
+        id: 0
+        content: content
+  requestBodies:
+    User:
+      description: List of user object
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/User"
+      required: true
+    Message:
+      description: message to process
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Message"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/Message"
+      required: true
+    CreateNewPost:
+      description: Post to create
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateNewPost"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/CreateNewPost"
+      required: true
